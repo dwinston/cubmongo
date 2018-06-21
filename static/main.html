@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Time Series Visualization of FireWorks Databases</title>
+</head>
+<style>
+@import url(//fonts.googleapis.com/css?family=Yanone+Kaffeesatz:400,700);
+@import url(https://square.github.io/cubism/style.css);
+</style>
+<body>
+
+<h2>
+  <img src='https://materialsproject.org/static/images/Logo/Mp-logo-v5.ad467cf84f15.png'
+       style="width:100px;vertical-align:middle;">
+  Time Series Visualization of MongoDB Databases
+</h2>
+<div id="elastic"></div>
+
+<script src="https://d3js.org/d3.v2.min.js"></script>
+<script src="/cubism"></script>
+<script src="http://square.github.io/cubism/highlight.min.js"></script>
+<script>
+var formatDate = d3.time.format.iso;
+
+function mongometric(name, db, collection, timefield, expression) {
+
+  return context.metric(function(start, stop, step, callback) {
+    d3.json("/mongometric"
+      + "?db=" + db
+      + "&collection=" + collection
+      + "&filter=" + encodeURIComponent(expression || "{}")
+      + "&timefield=" + timefield
+      + "&start=" + formatDate(start)
+      + "&stop=" + formatDate(stop)
+      + "&step=" + step, function(data) {
+      if (!data) return callback(new Error("unable to load data"));
+      callback(null, data);
+    });
+  }, name);
+};
+</script>
+<script>
+  //var now = new Date();
+  //var now_utc = new Date(
+  //  now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(),
+  //  now.getUTCHours(), now.getUTCMinutes(), now.getUTCSeconds());
+  var context = cubism.context()
+  //.serverDelay(new Date(Date.UTC(2017,11,22,1,44)) - now_utc) // allow 7 days of collection lag
+  //.serverDelay((8 * 24 + 20) * 60 * 60 * 1000)
+  .clientDelay(3 * 1000)
+  //.step(1 * 60 * 60 * 1000)
+    .step(5 * 1000)
+    //.advance(5 * 1000) // five seconds per step fetch
+    .size(960);
+
+
+  function metrics_fireworks(name, db) {
+    return [
+      mongometric(name+" fireworks created",
+        db, "fireworks", "created_on"),
+      mongometric(name+" fireworks updated",
+        db, "fireworks", "updated_on"),
+      mongometric(name+" workflows created",
+        db, "workflows", "created_on"),
+      mongometric(name+" workflows updated",
+        db, "workflows", "updated_on"),
+      //mongometric(name+" launches started",
+      //  db, "launches", "time_start"),
+      //mongometric(name+" launches ended",
+      //  db, "launches", "time_end")
+    ];
+  }
+
+  var metrics = metrics_fireworks("core", "core")
+    .concat(metrics_fireworks("elastic", "elastic"))
+    .concat(metrics_fireworks("SCAN", "SCAN"))
+
+  d3.select("#elastic").call(function(div) {
+
+  div.append("div")
+      .attr("class", "axis")
+      .call(context.axis().orient("top"));
+
+  div.selectAll(".horizon")
+      .data(metrics)
+    .enter().append("div")
+      .attr("class", "horizon")
+      .call(context.horizon().extent([0, 5]));
+
+  div.append("div")
+      .attr("class", "rule")
+      .call(context.rule());
+
+});
+
+// On mousemove, reposition the chart values to match the rule.
+context.on("focus", function(i) {
+  d3.selectAll(".value").style("right", i == null ? null : context.size() - i + "px");
+});
+</script>
+</html>
