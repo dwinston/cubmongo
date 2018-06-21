@@ -1,9 +1,10 @@
 import datetime
 import json
 from urllib.parse import unquote
-
 from flask import Flask, current_app, jsonify, request
 from mongogrant import Client
+from mp_viewer.structure_vis_mp import PymatgenVisualizationIntermediateFormat
+from pymatgen import Structure
 
 app = Flask(__name__)
 
@@ -61,6 +62,24 @@ def mongometric():
         values.append(coll.find(criteria).count())
         dt_last += td_step
     return jsonify(values)
+
+@app.route('/recent_structures')
+def recent_structures():
+    # Hella lazy
+    coll = dbs['elastic']['fireworks']
+    cursor = coll.find({"state": "COMPLETED"},
+                       {"spec": 1, "name": 1, "updated_on": 1})
+    recent_fws = cursor.sort("updated_on", -1).limit(4)
+    recent_calcs = []
+    for fw in recent_fws:
+        if 'structure optimization' in fw['name']:
+            structure = fw['spec']['_tasks'][1]['structure']
+        else:
+            structure = fw['spec']['_tasks'][2]['structure']
+        structure = Structure.from_dict(structure)
+        fmt = PymatgenVisualizationIntermediateFormat(structure)
+        recent_calcs.append(fmt.json)
+    return jsonify(recent_calcs)
 
 
 def isostr_to_dt(isostr):
