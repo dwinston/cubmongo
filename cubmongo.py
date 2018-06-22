@@ -4,6 +4,10 @@ from urllib.parse import unquote
 
 from flask import Flask, current_app, jsonify, request
 from mongogrant import Client
+from structure_vis_mp import PymatgenVisualizationIntermediateFormat
+from pymatgen import Structure
+import re
+from django.utils.safestring import mark_safe
 
 app = Flask(__name__)
 
@@ -21,6 +25,10 @@ def cubism():
 @app.route('/structureViewer')
 def structure_viewer():
     return current_app.send_static_file('structureViewerBuilt.js')
+
+@app.route("/container")
+def get_style():
+    return current_app.send_static_file('container.css')
 
 
 client = Client()
@@ -67,10 +75,36 @@ def mongometric():
         dt_last += td_step
     return jsonify(values)
 
+@app.route('/recent_structures')
+def recent_structures():
+    # Hella lazy
+    coll = dbs['elastic']['fireworks']
+    cursor = coll.find({"state": "COMPLETED"},
+                       {"spec": 1, "name": 1, "updated_on": 1})
+    recent_fws = cursor.sort("updated_on", -1).limit(4)
+    recent_calcs = []
+    for fw in recent_fws:
+        if 'structure optimization' in fw['name']:
+            structure = fw['spec']['_tasks'][1]['structure']
+        else:
+            structure = fw['spec']['_tasks'][2]['structure']
+        structure = Structure.from_dict(structure)
+        fmt = PymatgenVisualizationIntermediateFormat(structure)
+        out = fmt.json
+        out.update({"title": formulize(structure.composition.reduced_formula)})
+        recent_calcs.append(out)
+    return jsonify(recent_calcs)
 
 def isostr_to_dt(isostr):
     isostr = isostr.split(".", 1)[0] # Lose sub-second precision
     return datetime.datetime.strptime(isostr, "%Y-%m-%dT%H:%M:%S")
+
+def formulize(value):
+    # strip spaces
+    value = re.sub(r'\s', r'', value)
+    # add substring
+    value = re.sub(r'(\.?\d+\.?\d*)', r'<sub>\1</sub>', value)
+    return mark_safe(value)
 
 
 tf_isoformat = lambda dt: dt.isoformat()
