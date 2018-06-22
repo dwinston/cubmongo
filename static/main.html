@@ -15,7 +15,10 @@
        style="width:100px;vertical-align:middle;">
   Time Series Visualization of MongoDB Databases
 </h2>
-<div id="elastic"></div>
+<div id="ht"></div>
+<div id="website"></div>
+<div id="builders"></div>
+<div id="workflows"></div>
 
 <script src="https://d3js.org/d3.v2.min.js"></script>
 <script src="/cubism"></script>
@@ -55,16 +58,109 @@ function mongometric(name, db, collection, timefield, expression) {
     .size(960);
 
 
+  function metrics_ht() {
+    // high-throughput metrics
+    return [
+      mongometric("API requests (capped)",
+        "app", "cappedlog_api", "dt"),
+      ]
+  }
+
+  var ht_metrics = metrics_ht();
+
+  d3.select("#ht").call(function(div) {
+
+    div.append("div")
+      .attr("class", "axis")
+      .call(context.axis().orient("top"));
+
+    div.selectAll(".horizon")
+      .data(ht_metrics)
+      .enter().append("div")
+      .attr("class", "horizon")
+      .call(context.horizon().extent([0, 100]));
+
+    div.append("div")
+      .attr("class", "rule")
+      .call(context.rule());
+  });
+
+  function metrics_website_logs() {
+    return [
+      mongometric("material detail views (capped)",
+        "app", "cappedlog_detailview", "dt"),
+      mongometric("materials explorer queries (capped)",
+        "app", "cappedlog_appquery", "dt"),
+    ]
+  }
+
+  var website_metrics = metrics_website_logs();
+
+  d3.select("#website").call(function(div) {
+
+    //div.append("div")
+    //  .attr("class", "axis")
+    //  .call(context.axis().orient("top"));
+
+    div.selectAll(".horizon")
+      .data(website_metrics)
+      .enter().append("div")
+      .attr("class", "horizon")
+      .call(context.horizon().extent([0, 5]));
+
+    //div.append("div")
+    //  .attr("class", "rule")
+    //  .call(context.rule());
+  });
+
+  function metrics_builders() {
+    var collections = [
+      "tasks",
+      //"task_types",
+      "materials_init",
+      "diffraction",
+      "thermo",
+      "mat_snls",
+      "materials",
+      "electronic_structure"
+    ]
+    return collections.map(function(coll) {
+      return mongometric(coll+" updated",
+        "build", coll, "last_updated");
+    });
+  }
+
+  var builders_metrics = metrics_builders()
+
+  d3.select("#builders").call(function(div) {
+
+    //div.append("div")
+    //  .attr("class", "axis")
+    //  .call(context.axis().orient("top"));
+
+    div.selectAll(".horizon")
+      .data(builders_metrics)
+      .enter().append("div")
+      .attr("class", "horizon")
+      .call(context.horizon().extent([0, 5]));
+
+    div.append("div")
+      .attr("class", "rule")
+      .call(context.rule());
+
+  });
+
+
   function metrics_fireworks(name, db) {
     return [
-      mongometric(name+" fireworks created",
-        db, "fireworks", "created_on"),
-      mongometric(name+" fireworks updated",
-        db, "fireworks", "updated_on"),
-      mongometric(name+" workflows created",
-        db, "workflows", "created_on"),
+      //mongometric(name+" fireworks created",
+      //  db, "fireworks", "created_on"),
+      //mongometric(name+" fireworks updated",
+      //  db, "fireworks", "updated_on"),
+      //mongometric(name+" workflows created",
+      //  db, "workflows", "created_on"),
       mongometric(name+" workflows updated",
-        db, "workflows", "updated_on"),
+        db, "workflows", "updated_on")
       //mongometric(name+" launches started",
       //  db, "launches", "time_start"),
       //mongometric(name+" launches ended",
@@ -72,31 +168,31 @@ function mongometric(name, db, collection, timefield, expression) {
     ];
   }
 
-  var metrics = metrics_fireworks("core", "core")
+  var workflows_metrics = metrics_fireworks("core", "core")
     .concat(metrics_fireworks("elastic", "elastic"))
-    .concat(metrics_fireworks("SCAN", "SCAN"))
+    .concat(metrics_fireworks("SCAN", "SCAN"));
 
-  d3.select("#elastic").call(function(div) {
+  d3.select("#workflows").call(function(div) {
 
-  div.append("div")
-      .attr("class", "axis")
-      .call(context.axis().orient("top"));
+    //div.append("div")
+    //  .attr("class", "axis")
+    //  .call(context.axis().orient("top"));
 
-  div.selectAll(".horizon")
-      .data(metrics)
-    .enter().append("div")
+    div.selectAll(".horizon")
+      .data(workflows_metrics)
+      .enter().append("div")
       .attr("class", "horizon")
       .call(context.horizon().extent([0, 5]));
 
-  div.append("div")
+    div.append("div")
       .attr("class", "rule")
       .call(context.rule());
 
-});
+  });
 
-// On mousemove, reposition the chart values to match the rule.
-context.on("focus", function(i) {
-  d3.selectAll(".value").style("right", i == null ? null : context.size() - i + "px");
-});
+  // On mousemove, reposition the chart values to match the rule.
+  context.on("focus", function(i) {
+    d3.selectAll(".value").style("right", i == null ? null : context.size() - i + "px");
+  });
 </script>
 </html>

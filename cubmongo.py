@@ -20,10 +20,14 @@ def cubism():
 
 client = Client()
 
+client.set_alias("mg2.lbl", "matgen2.lbl.gov", "host")
 client.set_alias("m01.nersc", "mongodb01.nersc.gov", "host")
 client.set_alias("m03.nersc", "mongodb03.nersc.gov", "host")
+client.set_alias("m04.nersc", "mongodb04.nersc.gov", "host")
 
+client.set_alias("build", "mp_prod", "db")
 client.set_alias("core", "fw_mp_prod_atomate", "db")
+client.set_alias("app", "mg_apps_prod", "db")
 client.set_alias("elastic", "fw_jhm_kpoints", "db")
 client.set_alias("SCAN", "fw_shyamd", "db")
 
@@ -31,6 +35,8 @@ dbs = {
     "elastic": client.db("ro:m03.nersc/elastic", connect=False),
     "SCAN": client.db("ro:m03.nersc/SCAN", connect=False),
     "core": client.db("ro:m01.nersc/core", connect=False),
+    "app": client.db("ro:m04.nersc/app", connect=False),
+    "build": client.db("ro:mg2.lbl/build", connect=False),
 }
 
 
@@ -52,7 +58,7 @@ def mongometric():
     criteria_base = json.loads(unquote(filt))
     dt_last = dt_start
     values = []
-    fmt = format_timefield[collname]
+    fmt = format_timefield.get(collname, tf_dtformat)
     while dt_last < dt_stop:
         criteria = criteria_base.copy()
         criteria.update({timefield: {
@@ -72,7 +78,7 @@ tf_isoformat = lambda dt: dt.isoformat()
 tf_dtformat = lambda dt: dt
 format_timefield = {
     "fireworks": tf_isoformat,
-    "workflows":tf_dtformat,
+    "workflows": tf_dtformat,
     "launches": tf_isoformat,
 }
 
