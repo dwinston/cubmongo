@@ -1,0 +1,3 @@
+[submodule "mp-viewer"]
+	path = mp-viewer
+	url = https://github.com/mkhorton/mp-viewer
