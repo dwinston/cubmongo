@@ -16,7 +16,7 @@
        style="width:100px;vertical-align:middle;">
   Time Series Visualization of MongoDB Databases
 </h2>
-<div id="elastic"></div>t ad
+<div id="elastic"></div>
 <div id="container">
     <div id="structure_1" style="width:233px;height:230px;border: dotted 1px black"></div>
     <div id="structure_2" style="width:233px;height:230px;border: dotted 1px black"></div>
@@ -122,10 +122,16 @@ function recent_structures(v, index, dom_element) {
 }
 var viewers = []
 // hella lazy
-recent_structures(viewers, 3, document.getElementById("structure_1"))
-recent_structures(viewers, 2, document.getElementById("structure_2"))
-recent_structures(viewers, 1, document.getElementById("structure_3"))
-recent_structures(viewers, 0, document.getElementById("structure_4"))
+recent_structures(viewers, 3, document.getElementById("structure_1"));
+recent_structures(viewers, 2, document.getElementById("structure_2"));
+recent_structures(viewers, 1, document.getElementById("structure_3"));
+recent_structures(viewers, 0, document.getElementById("structure_4"));
+setInterval(function() {
+    recent_structures(viewers, 3, document.getElementById("structure_1"));
+    recent_structures(viewers, 2, document.getElementById("structure_2"));
+    recent_structures(viewers, 1, document.getElementById("structure_3"));
+    recent_structures(viewers, 0, document.getElementById("structure_4"));
+}, 60 * 1000);
 </script>
 </body>
 </html>
