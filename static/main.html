@@ -111,6 +111,7 @@ context.on("focus", function(i) {
 });
 
 function recent_structures(v, index, dom_element) {
+    dom_element.innerHTML = "";
     d3.json("/recent_structures",
             function(data) {
                 if (!data) {
