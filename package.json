@@ -1,0 +1,29 @@
+{
+  "name": "cubmongo",
+  "version": "1.0.0",
+  "description": "Use Cubism.js for time-series visualization of updates to multiple MongoDB collections.",
+  "main": "index.js",
+  "dependencies": {
+    "orbit-controls-es6": "^1.0.12",
+    "three": "^0.93.0",
+    "webpack": "^4.12.0"
+  },
+  "devDependencies": {
+    "webpack": "^4.12.0",
+    "webpack-cli": "^3.0.8",
+    "webpack-command": "^0.2.1"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/dwinston/cubmongo.git"
+  },
+  "author": "Donny Winston",
+  "license": "BSD",
+  "bugs": {
+    "url": "https://github.com/dwinston/cubmongo/issues"
+  },
+  "homepage": "https://github.com/dwinston/cubmongo#readme"
+}

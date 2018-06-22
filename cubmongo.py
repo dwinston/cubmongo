@@ -18,6 +18,11 @@ def cubism():
     return current_app.send_static_file('cubism.v1.js')
 
 
+@app.route('/structureViewer')
+def structure_viewer():
+    return current_app.send_static_file('structureViewerBuilt.js')
+
+
 client = Client()
 
 client.set_alias("m01.nersc", "mongodb01.nersc.gov", "host")
