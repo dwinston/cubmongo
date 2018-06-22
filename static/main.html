@@ -7,6 +7,7 @@
 <style>
 @import url(//fonts.googleapis.com/css?family=Yanone+Kaffeesatz:400,700);
 @import url(https://square.github.io/cubism/style.css);
+@import url(/container)
 </style>
 <body>
 
@@ -19,10 +20,20 @@
 <div id="website"></div>
 <div id="builders"></div>
 <div id="workflows"></div>
-
+<div id="container">
+    <div id="structure_1" style="width:233px;height:230px;border: dotted 1px black"></div>
+    <div id="structure_2" style="width:233px;height:230px;border: dotted 1px black"></div>
+    <div id="structure_3" style="width:233px;height:230px;border: dotted 1px black"></div>
+    <div id="structure_4" style="width:233px;height:230px;border: dotted 1px black"></div>
+</div>
+<div id="structures_title" style="text-align:center;margin:50px">
+    <h2>Recently completed calculations</h2>
+</div>
 <script src="https://d3js.org/d3.v2.min.js"></script>
+<script src="https://code.jquery.com/jquery-2.2.4.min.js"></script>
 <script src="/cubism"></script>
 <script src="http://square.github.io/cubism/highlight.min.js"></script>
+<script src="/structureViewer"></script>
 <script>
 var formatDate = d3.time.format.iso;
 
@@ -194,5 +205,30 @@ function mongometric(name, db, collection, timefield, expression) {
   context.on("focus", function(i) {
     d3.selectAll(".value").style("right", i == null ? null : context.size() - i + "px");
   });
+
+  function recent_structures(v, index, dom_element) {
+      dom_element.innerHTML = "";
+      d3.json("/recent_structures",
+              function(data) {
+                  if (!data) {
+                      return new Error("unable to get Data");
+                  }
+                  viewers[index] = new StructureViewer(data[index], dom_element);
+                  $(dom_element).append("<span id=\"title\">"+ data[index]['title'] + "</span>")
+              });
+  }
+  var viewers = []
+  // hella lazy
+  recent_structures(viewers, 3, document.getElementById("structure_1"));
+  recent_structures(viewers, 2, document.getElementById("structure_2"));
+  recent_structures(viewers, 1, document.getElementById("structure_3"));
+  recent_structures(viewers, 0, document.getElementById("structure_4"));
+  setInterval(function() {
+      recent_structures(viewers, 3, document.getElementById("structure_1"));
+      recent_structures(viewers, 2, document.getElementById("structure_2"));
+      recent_structures(viewers, 1, document.getElementById("structure_3"));
+      recent_structures(viewers, 0, document.getElementById("structure_4"));
+  }, 60 * 1000);
 </script>
+</body>
 </html>

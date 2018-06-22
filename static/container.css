@@ -1,0 +1,26 @@
+#container {
+    text-align: justify;
+    -ms-text-justify: distribute-all-lines;
+    text-justify: distribute-all-lines;
+    width:100%;
+    padding=10px;
+}
+#container>div {
+    width: 25%;
+    vertical-align: top;
+    display: inline-block;
+    *display: inline;
+    zoom: 1;
+}
+span {
+    width: 100%;
+    display: inline-block;
+}
+#title {
+    text-align: center;
+}
+#info {
+	width: 100%;
+	z-index: 100;
+	display:block;
+}
